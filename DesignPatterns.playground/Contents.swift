@@ -200,13 +200,82 @@ class BackEndVacancy: BackSkills {
     }
 }
 
+
 /*
 Dependency inversion principle - Принцип инверсии зависимостей
 Зависимости внутри системы строятся на основе абстракций. Модули верхнего уровня не зависят от модулей нижнего уровня. Абстракции не должны зависеть от деталей. Детали должны зависеть от абстракций.
 */
 
+protocol Wife {
+    func getFood() -> String
+}
 
+class Man {
+    var wife: Wife
+    var food: String {
+        return wife.getFood()
+    }
+    
+    init(wife: Wife) {
+        self.wife = wife
+    }
+}
 
+class FirstWife: Wife {
+    func getFood() -> String {
+        return "Vegeterian food"
+    }
+}
+
+class SecondWife: Wife {
+    func getFood() -> String {
+        return "Fast food"
+    }
+}
+
+let man = Man(wife: SecondWife())
+man.food
+
+man.wife = FirstWife()
+man.food
+
+// проблема такого кода в том что еда мужчины зависима от жены
+
+protocol GetFood {
+    func getFood() -> String
+}
+
+class ThirdWife: GetFood {
+    func getFood() -> String {
+        return "Fast food"
+    }
+}
+
+class Mother: GetFood {
+    func getFood() -> String {
+        return "Tasty food"
+    }
+}
+
+class Sister: GetFood {
+    func getFood() -> String {
+        return "Classic food"
+    }
+}
+
+class HappyMan {
+    var foodProvider: GetFood
+    var food: String {
+        return foodProvider.getFood()
+    }
+    
+    init(foodProvider: GetFood) {
+        self.foodProvider = foodProvider
+    }
+}
+
+let happyMan = HappyMan(foodProvider: Mother())
+happyMan.food
 
 
 

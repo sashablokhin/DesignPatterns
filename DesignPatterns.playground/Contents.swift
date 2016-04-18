@@ -108,11 +108,47 @@ let webDev = WebDeveloper()
 let team = Team(team: [swiftDev, objcDev, webDev])
 team.programming()
 
+
 /*
 Liskov substitution principle - Принцип подстановки Барбары Лисков
 Функции, которые используют базовый тип, должны иметь возможность использовать подтипы базового типа, не зная об этом.
 Подклассы не могут замещать поведения базовых классов. Подтипы должны дополнять базовые типы.
 */
+
+protocol CanFly {
+    var flySpeed: Double {get set}
+}
+
+protocol CanSwim {
+    var swimSpeed: Double {get set}
+}
+
+class Bird {
+    var name: String
+    
+    init(name: String) {
+        self.name = name
+    }
+}
+
+class Eagle: Bird, CanFly {
+    var flySpeed: Double
+    
+    init(flySpeed: Double, name: String) {
+        self.flySpeed = flySpeed
+        super.init(name: name)
+    }
+}
+
+class Penguin: Bird, CanSwim {
+    var swimSpeed: Double
+    
+    init(name: String, swimSpeed: Double) {
+        self.swimSpeed = swimSpeed
+        super.init(name: name)
+    }
+}
+
 
 /*
 Interface segregation principle - Принцип разделения интерфейса
@@ -123,3 +159,24 @@ Interface segregation principle - Принцип разделения интер
 Dependency inversion principle - Принцип инверсии зависимостей
 Зависимости внутри системы строятся на основе абстракций. Модули верхнего уровня не зависят от модулей нижнего уровня. Абстракции не должны зависеть от деталей. Детали должны зависеть от абстракций.
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

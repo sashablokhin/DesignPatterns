@@ -155,6 +155,51 @@ Interface segregation principle - Принцип разделения интер
 Много специализированных интерфейсов лучше, чем один универсальный.
 */
 
+protocol IosSkills {
+    var swift: Bool {get set}
+    var objc: Bool {get set}
+}
+
+protocol FrontSkills {
+    var html: Bool {get set}
+    var css: Bool {get set}
+}
+
+protocol BackSkills {
+    var ruby: Bool {get set}
+    var php: Bool {get set}
+}
+
+class IosVacancy: IosSkills {
+    var swift: Bool
+    var objc: Bool
+    
+    init(swift: Bool, objc: Bool) {
+        self.swift = swift
+        self.objc = objc
+    }
+}
+
+class FrontEndVacancy: FrontSkills {
+    var html: Bool
+    var css: Bool
+    
+    init(html: Bool, css: Bool) {
+        self.html = html
+        self.css = css
+    }
+}
+
+class BackEndVacancy: BackSkills {
+    var ruby: Bool
+    var php: Bool
+    
+    init(ruby: Bool, php: Bool) {
+        self.ruby = ruby
+        self.php = php
+    }
+}
+
 /*
 Dependency inversion principle - Принцип инверсии зависимостей
 Зависимости внутри системы строятся на основе абстракций. Модули верхнего уровня не зависят от модулей нижнего уровня. Абстракции не должны зависеть от деталей. Детали должны зависеть от абстракций.

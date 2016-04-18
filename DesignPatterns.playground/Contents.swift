@@ -67,6 +67,47 @@ Open/closed principle - Принцип открытости/закрытости
 Программные сущности должны быть открыты для расширения, но закрыты для изменения.
 */
 
+protocol CanWriteCode {
+    func programming() -> String
+}
+
+class SwiftDeveloper: CanWriteCode {
+    func programming() -> String {
+        return "Swift"
+    }
+}
+
+class ObjCDeveloper: CanWriteCode {
+    func programming() -> String {
+        return "Objective C"
+    }
+}
+
+class WebDeveloper: CanWriteCode {
+    func programming() -> String {
+        return "PHP"
+    }
+}
+
+class Team {
+    let team: [CanWriteCode]
+    
+    init(team: [CanWriteCode]) {
+        self.team = team
+    }
+    
+    func programming() -> [String] {
+        return team.map { $0.programming() }
+    }
+}
+
+let swiftDev = SwiftDeveloper()
+let objcDev = ObjCDeveloper()
+let webDev = WebDeveloper()
+
+let team = Team(team: [swiftDev, objcDev, webDev])
+team.programming()
+
 /*
 Liskov substitution principle - Принцип подстановки Барбары Лисков
 Функции, которые используют базовый тип, должны иметь возможность использовать подтипы базового типа, не зная об этом.

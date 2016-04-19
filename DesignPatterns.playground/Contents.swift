@@ -435,9 +435,83 @@ let bmw = BMW(car: Passanger(breakPedal: true, gasPedal: true, steeringWheel: tr
 Компоновщик (англ. Composite pattern) — структурный шаблон проектирования, объединяющий объекты в древовидную структуру для представления иерархии от частного к целому. Компоновщик позволяет клиентам обращаться к отдельным объектам и к группам объектов одинаково.
 */
 
+protocol Unit {
+    func getStrength() -> Int
+}
+
+class Archer: Unit {
+    func getStrength() -> Int {
+        return 3
+    }
+}
+
+class Infantryman: Unit {
+    func getStrength() -> Int {
+        return 2
+    }
+}
+
+class InfantrymanStrong: Infantryman {
+    override func getStrength() -> Int {
+        return 3
+    }
+}
+
+class InfantrymanWeak: Infantryman {
+    override func getStrength() -> Int {
+        return 1
+    }
+}
+
+class Horseman: Unit {
+    func getStrength() -> Int {
+        return 5
+    }
+}
+
+// Компоновщик
+
+class Army: Unit {
+    var units = [Unit]()
+    
+    init(units: [Unit]) {
+        self.units = units
+    }
+    
+    func getStrength() -> Int {
+        var totalStrength = 0
+        
+        for unit in units {
+            totalStrength += unit.getStrength()
+        }
+        
+        return totalStrength
+    }
+}
+
+let horsemans: [Unit] = Array(count: 300, repeatedValue: Horseman())
+let archers: [Unit] = Array(count: 500, repeatedValue: Archer())
+
+let army = Army(units: horsemans + archers)
+army.getStrength()
+
+let infantrymanStrong: [Unit] = Array(count: 500, repeatedValue: InfantrymanStrong())
+let infantrymanWeak: [Unit] = Array(count: 800, repeatedValue: InfantrymanWeak())
+
+let enemy = Army(units: infantrymanStrong + infantrymanWeak)
+
+if army.getStrength() > enemy.getStrength() {
+    print("win")
+} else {
+    print("lose")
+}
+
+
 /*
 Декоратор (англ. Decorator) — структурный шаблон проектирования, предназначенный для динамического подключения дополнительного поведения к объекту. Шаблон Декоратор предоставляет гибкую альтернативу практике создания подклассов с целью расширения функциональности.
 */
+
+
 
 /*
 Фасад (англ. Facade) — структурный шаблон проектирования, позволяющий скрыть сложность системы путем сведения всех возможных внешних вызовов к одному объекту, делегирующему их соответствующим объектам системы.

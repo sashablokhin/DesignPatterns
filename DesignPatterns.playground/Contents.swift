@@ -640,8 +640,46 @@ let client2 = callCenter.getInfo(9, address: "Tomsk")
 
 
 /*
-Приспособленец (англ. Flyweight, "легковесный (элемент)") — структурный шаблон проектирования, при котором объект, представляющий себя как уникальный экземпляр в разных местах программы, по факту не является таковым.
+Приспособленец (англ. Flyweight, "легковесный (элемент)") — структурный шаблон проектирования, при котором объект, представляющий себя как уникальный экземпляр в разных местах программы, по факту не является таковым. Для оптимизации памяти путем предотвращения создания экземпляров элементов имеющих общую сущность (в данном случае MikeMayers)
 */
+
+class MikeMayers {
+    let name: String
+    let skills: Int
+    
+    var role: String?
+    var age: Int?
+    
+    init() {
+        self.name = "Mike Mayers"
+        self.skills = 80
+        print("Created object")
+    }
+    
+    func getInfo() -> String {
+        if let role = role, let age = age {
+            return "Role - \(role), age - \(age)"
+        } else {
+            return "No role"
+        }
+    }
+}
+
+let mike = MikeMayers()
+mike.getInfo()
+
+mike.role = "Dr. Evil"
+mike.age = 55
+mike.getInfo()
+
+mike.role = "Austin Powers"
+mike.age = 25
+mike.getInfo()
+
+mike.role = "Fat Man"
+mike.age = 50
+mike.getInfo()
+
 
 /*
 Заместитель (англ. Proxy) — структурный шаблон проектирования, который предоставляет объект, который контролирует доступ к другому объекту, перехватывая все вызовы (выполняет функцию контейнера).

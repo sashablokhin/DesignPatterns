@@ -586,6 +586,59 @@ iceCream.getIngredients()
 Фасад (англ. Facade) — структурный шаблон проектирования, позволяющий скрыть сложность системы путем сведения всех возможных внешних вызовов к одному объекту, делегирующему их соответствующим объектам системы.
 */
 
+class DiscountDepartment {
+    func getDiscount(count: Int) -> Double {
+        switch count {
+        case 1: return 0
+        case 2...5: return 10
+        default: return 20
+        }
+    }
+}
+
+class OrderDepartment {
+    func getPrice(count: Int) -> Double {
+        return Double(count * 50)
+    }
+}
+
+class DeliveryDepartment {
+    func getDeliveryTime(address: String) -> Int {
+        if address == "Moscow" {
+            return 40
+        } else {
+            return 120
+        }
+    }
+}
+
+class PizzaServices {
+    let discount: DiscountDepartment
+    let order: OrderDepartment
+    let delivery: DeliveryDepartment
+    
+    init(discount: DiscountDepartment, order: OrderDepartment, delivery: DeliveryDepartment) {
+        self.discount = discount
+        self.order = order
+        self.delivery = delivery
+    }
+    
+    func getInfo(count: Int, address: String) -> (Double, Int) {
+        let regularPrice = order.getPrice(count)
+        let discountPrice = discount.getDiscount(count)
+        let price = regularPrice - regularPrice * discountPrice / 100
+        let timeDelivery = delivery.getDeliveryTime(address)
+        
+        return (price, timeDelivery)
+    }
+}
+
+let callCenter = PizzaServices(discount: DiscountDepartment(), order: OrderDepartment(), delivery: DeliveryDepartment())
+
+let client1 = callCenter.getInfo(5, address: "Moscow")
+let client2 = callCenter.getInfo(9, address: "Tomsk")
+
+
 /*
 Приспособленец (англ. Flyweight, "легковесный (элемент)") — структурный шаблон проектирования, при котором объект, представляющий себя как уникальный экземпляр в разных местах программы, по факту не является таковым.
 */

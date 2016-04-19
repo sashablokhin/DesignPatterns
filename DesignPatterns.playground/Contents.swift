@@ -685,6 +685,42 @@ mike.getInfo()
 Заместитель (англ. Proxy) — структурный шаблон проектирования, который предоставляет объект, который контролирует доступ к другому объекту, перехватывая все вызовы (выполняет функцию контейнера).
 */
 
+protocol Human {
+    func move() -> String
+    func getName() -> String
+}
+
+class Player: Human {
+    func move() -> String {
+        return "run"
+    }
+    func getName() -> String {
+        return "Ronaldo"
+    }
+}
+
+class Proxy: Human {
+    let owner: Human
+    
+    init(owner: Human) {
+        self.owner = owner
+    }
+    
+    func move() -> String {
+        return owner.move()
+    }
+    func getName() -> String {
+        return owner.getName()
+    }
+}
+
+let player = Player()
+player.move()
+
+let player1 = Proxy(owner: player)
+player1.move()
+
+
 // ----------------------------------Паттерны поведения-------------------------------------
 /*
 Цепочка обязанностей (англ. Chain of responsibility) — поведенческий шаблон проектирования, предназначенный для организации в системе уровней ответственности.

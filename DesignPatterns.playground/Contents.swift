@@ -347,6 +347,90 @@ fahrenheitTemperature.weather()
 Мост (англ. Bridge) — структурный шаблон проектирования, используемый в проектировании программного обеспечения чтобы «разделять абстракцию и реализацию так, чтобы они могли изменяться независимо». Шаблон мост использует инкапсуляцию, агрегирование и может использовать наследование для того, чтобы разделить ответственность между классами.
 */
 
+// Абстракция
+
+protocol Car {
+    var breakPedal: Bool {get set}
+    var gasPedal: Bool {get set}
+    var steeringWheel: Bool {get set}
+}
+
+class Truck: Car {
+    var breakPedal: Bool
+    var gasPedal: Bool
+    var steeringWheel: Bool
+    
+    init(breakPedal: Bool, gasPedal: Bool, steeringWheel: Bool) {
+        self.breakPedal = breakPedal
+        self.gasPedal = gasPedal
+        self.steeringWheel = steeringWheel
+    }
+}
+
+class Passanger: Car {
+    var breakPedal: Bool
+    var gasPedal: Bool
+    var steeringWheel: Bool
+    
+    init(breakPedal: Bool, gasPedal: Bool, steeringWheel: Bool) {
+        self.breakPedal = breakPedal
+        self.gasPedal = gasPedal
+        self.steeringWheel = steeringWheel
+    }
+}
+
+class Bus: Car {
+    var breakPedal: Bool
+    var gasPedal: Bool
+    var steeringWheel: Bool
+    
+    init(breakPedal: Bool, gasPedal: Bool, steeringWheel: Bool) {
+        self.breakPedal = breakPedal
+        self.gasPedal = gasPedal
+        self.steeringWheel = steeringWheel
+    }
+}
+
+// Реализация
+
+protocol Price {
+    var car: Car {get set}
+    var price: Double {get set}
+}
+
+class BMW: Price {
+    var car: Car
+    var price: Double
+    
+    init(car: Car, price: Double) {
+        self.car = car
+        self.price = price
+    }
+}
+
+class Mercedes: Price {
+    var car: Car
+    var price: Double
+    
+    init(car: Car, price: Double) {
+        self.car = car
+        self.price = price
+    }
+}
+
+class Volkswagen: Price {
+    var car: Car
+    var price: Double
+    
+    init(car: Car, price: Double) {
+        self.car = car
+        self.price = price
+    }
+}
+
+let bmw = BMW(car: Passanger(breakPedal: true, gasPedal: true, steeringWheel: true), price: 50000)
+
+
 /*
 Компоновщик (англ. Composite pattern) — структурный шаблон проектирования, объединяющий объекты в древовидную структуру для представления иерархии от частного к целому. Компоновщик позволяет клиентам обращаться к отдельным объектам и к группам объектов одинаково.
 */

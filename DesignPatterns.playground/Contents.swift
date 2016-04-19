@@ -511,6 +511,75 @@ if army.getStrength() > enemy.getStrength() {
 Декоратор (англ. Decorator) — структурный шаблон проектирования, предназначенный для динамического подключения дополнительного поведения к объекту. Шаблон Декоратор предоставляет гибкую альтернативу практике создания подклассов с целью расширения функциональности.
 */
 
+protocol IceCream {
+    func getCost() -> Double
+    func getIngredients() -> String
+}
+
+class SimpleIceCream: IceCream {
+    func getCost() -> Double {
+        return 10.0
+    }
+    
+    func getIngredients() -> String {
+        return "IceCream"
+    }
+}
+
+class IceCreamDecorator: IceCream {
+    private let decoratedIceCream: IceCream
+    private let ingredientSeparator = ", "
+    
+    required init(decoratedIceCream: IceCream) {
+        self.decoratedIceCream = decoratedIceCream
+    }
+    
+    func getCost() -> Double {
+        return decoratedIceCream.getCost()
+    }
+    
+    func getIngredients() -> String {
+        return decoratedIceCream.getIngredients()
+    }
+}
+
+class Bananas: IceCreamDecorator {
+    required init(decoratedIceCream: IceCream) {
+        super.init(decoratedIceCream: decoratedIceCream)
+    }
+    
+    override func getCost() -> Double {
+        return super.getCost() + 3.5
+    }
+    
+    override func getIngredients() -> String {
+        return super.getIngredients() + ingredientSeparator + "Bananas"
+    }
+}
+
+class Сhocolate: IceCreamDecorator {
+    required init(decoratedIceCream: IceCream) {
+        super.init(decoratedIceCream: decoratedIceCream)
+    }
+    
+    override func getCost() -> Double {
+        return super.getCost() + 5.0
+    }
+    
+    override func getIngredients() -> String {
+        return super.getIngredients() + ingredientSeparator + "Сhocolate"
+    }
+}
+
+var iceCream: IceCream = SimpleIceCream()
+iceCream.getCost()
+
+iceCream = Сhocolate(decoratedIceCream: iceCream)
+iceCream.getCost()
+
+iceCream = Bananas(decoratedIceCream: iceCream)
+iceCream.getCost()
+iceCream.getIngredients()
 
 
 /*

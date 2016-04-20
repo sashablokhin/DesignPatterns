@@ -722,9 +722,83 @@ player1.move()
 
 
 // ----------------------------------Паттерны поведения-------------------------------------
+// Позволяют структурировать подходы обработки поведения и взаимодействия объектов
 /*
-Цепочка обязанностей (англ. Chain of responsibility) — поведенческий шаблон проектирования, предназначенный для организации в системе уровней ответственности.
+Цепочка обязанностей (англ. Chain of responsibility) — поведенческий шаблон проектирования, предназначенный для организации в системе уровней ответственности. Позволяет избежать привязки отправителя запроса к его получателю, давая шанс обработать запрос нескольким получателям.
 */
+
+class MoneyPacket {
+    let value: Int // номинал купюры 100, 50, 20, 10
+    var quantity: Int // количество купюр
+    var nextPacket: MoneyPacket?
+    
+    init(value: Int, quantity: Int, nextPacket: MoneyPacket?) {
+        self.value = value
+        self.quantity = quantity
+        self.nextPacket = nextPacket
+    }
+    
+    func canWithdraw(var v: Int) -> Bool {
+        func canTakeSameBill(want: Int) -> Bool {
+            return (want / self.value) > 0
+        }
+        
+        var q = self.quantity
+        
+        while canTakeSameBill(v) {
+            if q == 0 {  // купюры закончились
+                break
+            }
+            
+            v -= self.value
+            q -= 1
+        }
+        
+        // банкомат выдал всю сумму
+        if v == 0 {
+            return true
+        } else if let next = self.nextPacket {
+            return next.canWithdraw(v)
+        }
+        
+        return false
+    }
+}
+
+class ATM {
+    private var hundred: MoneyPacket
+    private var fifty: MoneyPacket
+    private var twenty: MoneyPacket
+    private var ten: MoneyPacket
+    
+    private var startPacket: MoneyPacket {
+        return self.hundred
+    }
+    
+    init(hundred: MoneyPacket, fifty: MoneyPacket, twenty: MoneyPacket, ten: MoneyPacket) {
+        self.hundred = hundred
+        self.fifty = fifty
+        self.twenty = twenty
+        self.ten = ten
+    }
+    
+    func canWithdraw(value: Int) -> String {
+        return "Can withdraw: \(self.startPacket.canWithdraw(value))"
+    }
+}
+
+// Получатели - пачки с купюрами денег
+// по цепочке может ходить только один запрос
+let ten = MoneyPacket(value: 10, quantity: 100, nextPacket: nil)
+let twenty = MoneyPacket(value: 20, quantity: 100, nextPacket: ten)
+let fifty = MoneyPacket(value: 50, quantity: 100, nextPacket: twenty)
+let hundred = MoneyPacket(value: 100, quantity: 100, nextPacket: fifty)
+
+let atm = ATM(hundred: hundred, fifty: fifty, twenty: twenty, ten: ten)
+
+// Отправитель это клиент
+atm.canWithdraw(20000)
+atm.canWithdraw(10000)
 
 /*
 Команда (англ. Command) — поведенческий шаблон проектирования, используемый при объектно-ориентированном программировании, представляющий действие. Объект команды заключает в себе само действие и его параметры.

@@ -800,9 +800,61 @@ let atm = ATM(hundred: hundred, fifty: fifty, twenty: twenty, ten: ten)
 atm.canWithdraw(20000)
 atm.canWithdraw(10000)
 
+
 /*
 Команда (англ. Command) — поведенческий шаблон проектирования, используемый при объектно-ориентированном программировании, представляющий действие. Объект команды заключает в себе само действие и его параметры.
 */
+
+protocol Command {
+    func execute() -> String
+}
+
+class OnCommand: Command {
+    let devices: String
+    
+    init(devices: String) {
+        self.devices = devices
+    }
+    
+    func execute() -> String {
+        return "On \(devices)"
+    }
+}
+
+class OffCommand: Command {
+    let devices: String
+    
+    init(devices: String) {
+        self.devices = devices
+    }
+    
+    func execute() -> String {
+        return "Off \(devices)"
+    }
+}
+
+class Devices {
+    let onCommand: Command
+    let offComand: Command
+    
+    init(devices: String) {
+        self.onCommand = OnCommand(devices: devices)
+        self.offComand = OffCommand(devices: devices)
+    }
+    
+    func on() -> String {
+        return onCommand.execute()
+    }
+    
+    func off() -> String {
+        return offComand.execute()
+    }
+}
+
+let tv = Devices(devices: "Samsung")
+tv.on()
+tv.off()
+
 
 /*
 Интерпретатор (англ. Interpreter) — поведенческий шаблон проектирования, решающий часто встречающуюся, но подверженную изменениям, задачу.

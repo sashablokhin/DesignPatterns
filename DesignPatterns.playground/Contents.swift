@@ -948,6 +948,45 @@ var result = expression?.evaluate(integerContext)
 Итератор (англ. Iterator) — поведенческий шаблон проектирования. Представляет собой объект, позволяющий получить последовательный доступ к элементам объекта-агрегата без использования описаний каждого из агрегированных объектов.
 */
 
+struct AutomateCollections<T> {
+    var things: [T]
+}
+
+extension AutomateCollections: SequenceType {
+    typealias Generator = AnyGenerator<T>
+    
+    func generate() -> Generator {
+        var i = 0
+        return anyGenerator {
+            return i >= self.things.count ? nil : self.things[i++]
+        }
+    }
+}
+
+struct Chips {
+    let name: String
+}
+
+enum Drinks {
+    case Pepsi
+    case Cola
+    case Sprite
+}
+
+let chipsAutomate = AutomateCollections(things: [Chips(name: "Lays"), Chips(name: "Pringles")])
+
+// for in это и есть Итератор
+for chip in chipsAutomate {
+    print(chip.name)
+}
+
+let drinksAutomate = AutomateCollections(things: [Drinks.Pepsi, Drinks.Cola, Drinks.Sprite])
+
+for drink in drinksAutomate {
+    print(drink)
+}
+
+
 /*
 Посредник (англ. Mediator) — поведенческий шаблон проектирования, обеспечивающий взаимодействие множества объектов, формируя при этом слабую связанность и избавляя объекты от необходимости явно ссылаться друг на друга.
 */

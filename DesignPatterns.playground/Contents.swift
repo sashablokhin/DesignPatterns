@@ -1059,6 +1059,80 @@ gps.send("lat: 20.34, lon: 50.23")
 Хранитель (англ. Memento) — поведенческий шаблон проектирования, позволяющий, не нарушая инкапсуляцию, зафиксировать и сохранить внутреннее состояние объекта так, чтобы позднее восстановить его в это состояние.
 */
 
+class LedgerEntry {
+    let id: Int
+    let counterParty: String
+    let amount: Float
+    
+    init(id: Int, counterParty: String, amount: Float) {
+        self.id = id
+        self.counterParty = counterParty
+        self.amount = amount
+    }
+}
+
+class LedgerCommand {
+    private let instructions: Ledger -> Void
+    private let receiver: Ledger
+    
+    init(instructions: Ledger -> Void, receiver: Ledger) {
+        self.instructions = instructions
+        self.receiver = receiver
+    }
+    
+    func execute() {
+        self.instructions(self.receiver)
+    }
+}
+
+// Ledger - Счетная книга
+class Ledger {
+    private var entries = [Int : LedgerEntry]()
+    private var nextId = 1
+    var total: Float = 0.0
+    
+    func addEntry(counterParty: String, amount: Float) -> LedgerCommand {
+        let entry = LedgerEntry(id: nextId++, counterParty: counterParty, amount: amount)
+        entries[entry.id] = entry
+        total += amount
+        
+        return createUndoCommand(entry)
+    }
+    
+    private func createUndoCommand(entry: LedgerEntry) -> LedgerCommand {
+        return LedgerCommand(instructions: { target in
+            let removed = target.entries.removeValueForKey(entry.id)
+            
+            if removed != nil {
+                target.total -= removed!.amount
+            }
+            
+            }, receiver: self)
+    }
+    
+    func printEntries() {
+        for id in Array(entries.keys).sort(<) {
+            if let entry = entries[id] {
+                print("#\(id): \(entry.counterParty) $\(entry.amount)")
+            }
+        }
+        
+        print("Total: $\(total)")
+        print("----")
+    }
+}
+
+let ledger = Ledger()
+
+ledger.addEntry("Bob", amount: 100.43)
+ledger.addEntry("Joe", amount: 200.20)
+let undoCommand = ledger.addEntry("Alice", amount: 500)
+ledger.addEntry("Tony", amount: 20)
+
+ledger.printEntries()
+undoCommand.execute()
+ledger.printEntries()
+
 /*
 Наблюдатель (англ. Observer) — поведенческий шаблон проектирования. Также известен как «подчинённые» (Dependents). Создает механизм у класса, который позволяет получать экземпляру объекта этого класса оповещения от других объектов об изменении их состояния, тем самым наблюдая за ними.
 */

@@ -1258,6 +1258,55 @@ authManager.authenticate("joe", pass: "shhh")
 Состояние (англ. State) — поведенческий шаблон проектирования. Используется в тех случаях, когда во время выполнения программы объект должен менять своё поведение в зависимости от своего состояния.
 */
 
+class Context {
+    private var state: State = UnauthorizedState()
+    
+    var isAuthorized: Bool {
+        get { return state.isAuthorized(self) }
+    }
+    
+    var userId: String? {
+        get { return state.userId(self) }
+    }
+    
+    func changeStateToAuthorized(userId userId: String) {
+        state = AuthorizedState(userId: userId)
+    }
+    
+    func changeStateToUnauthorized() {
+        state = UnauthorizedState()
+    }
+}
+
+protocol State {
+    func isAuthorized(context: Context) -> Bool
+    func userId(context: Context) -> String?
+}
+
+class UnauthorizedState: State {
+    func isAuthorized(context: Context) -> Bool { return false }
+    func userId(context: Context) -> String? { return nil }
+}
+
+class AuthorizedState: State {
+    let userId: String
+    
+    init(userId: String) { self.userId = userId }
+    
+    func isAuthorized(context: Context) -> Bool { return true }
+    func userId(context: Context) -> String? { return userId }
+}
+
+let context = Context()
+(context.isAuthorized, context.userId)
+
+context.changeStateToAuthorized(userId: "admin")
+(context.isAuthorized, context.userId) // now logged in as "admin"
+
+context.changeStateToUnauthorized()
+(context.isAuthorized, context.userId)
+
+
 /*
 Стратегия (англ. Strategy) — поведенческий шаблон проектирования, предназначенный для определения семейства алгоритмов, инкапсуляции каждого из них и обеспечения их взаимозаменяемости. Это позволяет выбирать алгоритм путем определения соответствующего класса. Шаблон Strategy позволяет менять выбранный алгоритм независимо от объектов-клиентов, которые его используют.
 */

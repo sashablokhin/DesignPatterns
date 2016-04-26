@@ -1586,6 +1586,80 @@ var calc2 = clone.Result
 Одиночка (англ. Singleton) — порождающий шаблон проектирования, гарантирующий, что в однопоточном приложении будет единственный экземпляр класса с глобальной точкой доступа.
 */
 
+class DataItem {
+    enum ItemType : String {
+        case Email = "Email Address"
+        case Phone = "Phone Number"
+        case Card = "Credit Card Number"
+    }
+    
+    var type: ItemType
+    var data: String
+    
+    init(type: ItemType, data: String) {
+        self.type = type
+        self.data = data
+    }
+}
+
+final class Logger {
+    private var data = [String]()
+    
+    private init() {}
+    
+    func log(msg: String) {
+        data.append(msg)
+    }
+    
+    func printLog() {
+        for msg in data {
+            print("Log: \(msg)")
+        }
+    }
+}
+
+// Singleton - global variable
+let globalLogger = Logger()
+
+final class BackupServer {
+    static let sharedInstance = BackupServer(name: "MainServer")
+    
+    let name: String
+    private var data = [DataItem]()
+    private let arrayQueue = dispatch_queue_create("arrayQueue", DISPATCH_QUEUE_SERIAL)
+    
+    private init(name: String) {
+        self.name = name
+        globalLogger.log("Created new server \(name)")
+    }
+    
+    func backup(item: DataItem) {
+        // DISPATCH_QUEUE_SERIAL для того что бы элементы добавлялись по очереди когда обращение к singleton идет из разных потоков
+        dispatch_sync(arrayQueue) {
+            self.data.append(item)
+            globalLogger.log("\(self.name) backed up item of type \(item.type.rawValue)")
+        }
+    }
+    
+    func getData() -> [DataItem] {
+        return data
+    }
+}
+
+var server = BackupServer.sharedInstance
+server.backup(DataItem(type: .Email, data: "joe@example.com"))
+server.backup(DataItem(type: .Phone, data: "555-123-1133"))
+
+globalLogger.log("Backed up 2 items to \(server.name)")
+
+var otherServer = BackupServer.sharedInstance
+otherServer.backup(DataItem(type: .Email, data: "bob@example.com"))
+
+globalLogger.log("Backed up 1 item to \(otherServer.name)")
+
+globalLogger.printLog()
+
+
 /*
 Объектный пул (англ. Object pool) — порождающий шаблон проектирования, набор инициализированных и готовых к использованию объектов. Когда системе требуется объект, он не создаётся, а берётся из пула. Когда объект больше не нужен, он не уничтожается, а возвращается в пул.
 */

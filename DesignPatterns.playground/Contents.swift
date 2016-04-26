@@ -1059,6 +1059,13 @@ gps.send("lat: 20.34, lon: 50.23")
 Хранитель (англ. Memento) — поведенческий шаблон проектирования, позволяющий, не нарушая инкапсуляцию, зафиксировать и сохранить внутреннее состояние объекта так, чтобы позднее восстановить его в это состояние.
 */
 
+protocol Memento {}
+
+protocol Originator {
+    func createMemento() -> Memento
+    func applyMemento(memento: Memento)
+}
+
 class LedgerEntry {
     let id: Int
     let counterParty: String
@@ -1071,43 +1078,48 @@ class LedgerEntry {
     }
 }
 
-class LedgerCommand {
-    private let instructions: Ledger -> Void
-    private let receiver: Ledger
+class LedgerMemento: Memento {
+    private let entries: [LedgerEntry]
+    private let total: Float
+    private let nextId: Int
     
-    init(instructions: Ledger -> Void, receiver: Ledger) {
-        self.instructions = instructions
-        self.receiver = receiver
+    init(ledger: Ledger) {
+        self.entries = Array(ledger.entries.values)
+        self.total = ledger.total
+        self.nextId = ledger.nextId
     }
     
-    func execute() {
-        self.instructions(self.receiver)
+    func apply(ledger: Ledger) {
+        ledger.total = self.total
+        ledger.nextId = self.nextId
+        ledger.entries.removeAll(keepCapacity: true)
+        
+        for entry in self.entries {
+            ledger.entries[entry.id] = entry
+        }
     }
 }
 
-// Ledger - Счетная книга
-class Ledger {
+// Счетная книга
+class Ledger: Originator {
     private var entries = [Int : LedgerEntry]()
     private var nextId = 1
     var total: Float = 0.0
     
-    func addEntry(counterParty: String, amount: Float) -> LedgerCommand {
+    func addEntry(counterParty: String, amount: Float) {
         let entry = LedgerEntry(id: nextId++, counterParty: counterParty, amount: amount)
         entries[entry.id] = entry
         total += amount
-        
-        return createUndoCommand(entry)
     }
     
-    private func createUndoCommand(entry: LedgerEntry) -> LedgerCommand {
-        return LedgerCommand(instructions: { target in
-            let removed = target.entries.removeValueForKey(entry.id)
-            
-            if removed != nil {
-                target.total -= removed!.amount
-            }
-            
-            }, receiver: self)
+    func createMemento() -> Memento {
+        return LedgerMemento(ledger: self)
+    }
+    
+    func applyMemento(memento: Memento) {
+        if let m = memento as? LedgerMemento {
+            m.apply(self)
+        }
     }
     
     func printEntries() {
@@ -1126,16 +1138,121 @@ let ledger = Ledger()
 
 ledger.addEntry("Bob", amount: 100.43)
 ledger.addEntry("Joe", amount: 200.20)
-let undoCommand = ledger.addEntry("Alice", amount: 500)
+
+let memento = ledger.createMemento()
+
+ledger.addEntry("Alice", amount: 500)
 ledger.addEntry("Tony", amount: 20)
 
 ledger.printEntries()
-undoCommand.execute()
+
+ledger.applyMemento(memento)
+
 ledger.printEntries()
+
 
 /*
 Наблюдатель (англ. Observer) — поведенческий шаблон проектирования. Также известен как «подчинённые» (Dependents). Создает механизм у класса, который позволяет получать экземпляру объекта этого класса оповещения от других объектов об изменении их состояния, тем самым наблюдая за ними.
 */
+
+protocol Observer: class {
+    func notify(user: String, success: Bool)
+}
+
+protocol Subject {
+    func addObservers(observers: Observer...)
+    func removeObserver(observer: Observer)
+}
+
+class SubjectBase: Subject {
+    private var observers = [Observer]()
+    private var collectionQueue = dispatch_queue_create("colQ", DISPATCH_QUEUE_CONCURRENT)
+    
+    func addObservers(observers: Observer...) {
+        dispatch_barrier_sync(self.collectionQueue) {
+            for newOb in observers {
+                self.observers.append(newOb)
+            }
+        }
+    }
+    
+    func removeObserver(observer: Observer) {
+        dispatch_barrier_sync(self.collectionQueue) {
+            self.observers = self.observers.filter({$0 !== observer})
+        }
+    }
+    
+    func sendNotification(user: String, success: Bool) {
+        dispatch_sync(self.collectionQueue) {
+            for ob in self.observers {
+                ob.notify(user, success: success)
+            }
+        }
+    }
+}
+
+class AuthenticationManager: SubjectBase {
+    func authenticate(user: String, pass: String) -> Bool {
+        var result = false
+        
+        if user == "bob" && pass == "secret" {
+            result = true
+            print("User \(user) is authenticated")
+        } else {
+            print("Failed authentication attempt")
+        }
+        
+        sendNotification(user, success: result)
+        
+        return result
+    }
+}
+
+class ActivityLog: Observer {
+    func notify(user: String, success: Bool) {
+        print("Auth request for \(user). Success: \(success)")
+    }
+    
+    func logActivity(activity: String) {
+        print("Log: \(activity)")
+    }
+}
+
+class FileCache: Observer {
+    func notify(user: String, success: Bool) {
+        if success {
+            loadFiles(user)
+        }
+    }
+    
+    func loadFiles(user: String) {
+        print("Load files for \(user)")
+    }
+}
+
+class AttackMonitor: Observer {
+    func notify(user: String, success: Bool) {
+        monitorSuspiciousActivity = !success
+    }
+    
+    var monitorSuspiciousActivity: Bool = false {
+        didSet {
+            print("Monitoring for attack: \(monitorSuspiciousActivity)")
+        }
+    }
+}
+
+let log = ActivityLog()
+let cache = FileCache()
+let monitor = AttackMonitor()
+
+let authManager = AuthenticationManager()
+authManager.addObservers(log, cache, monitor)
+
+authManager.authenticate("bob", pass: "secret")
+print("-----")
+authManager.authenticate("joe", pass: "shhh")
+
 
 /*
 Состояние (англ. State) — поведенческий шаблон проектирования. Используется в тех случаях, когда во время выполнения программы объект должен менять своё поведение в зависимости от своего состояния.

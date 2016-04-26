@@ -1353,13 +1353,75 @@ let multiplyStrategy = MultiplyStrategy()
 let sum = sequence.compute(sumStrategy)
 let multiply = sequence.compute(multiplyStrategy)
 
-/*
-Шаблонный метод (англ. Template method) — поведенческий шаблон проектирования, определяющий основу алгоритма и позволяющий наследникам переопределять некоторые шаги алгоритма, не изменяя его структуру в целом.
-*/
 
 /*
 Посетитель (англ. visitor) — поведенческий шаблон проектирования, описывающий операцию, которая выполняется над объектами других классов. При изменении visitor нет необходимости изменять обслуживаемые классы.
 */
+
+/*
+Шаблонный метод (англ. Template method) — поведенческий шаблон проектирования, определяющий основу алгоритма и позволяющий наследникам переопределять некоторые шаги алгоритма, не изменяя его структуру в целом.
+*/
+
+struct Donor {
+    let title: String
+    let firstName: String
+    let familyName: String
+    let lastDonation: Float
+    
+    init(title: String, firstName: String, familyName: String, lastDonation: Float) {
+        self.title = title
+        self.firstName = firstName
+        self.familyName = familyName
+        self.lastDonation = lastDonation
+    }
+}
+
+class DonorDatabase {
+    private var donors: [Donor]
+    var filter: ([Donor] -> [Donor])?
+    var generate: ([Donor] -> [String])?
+    
+    init() {
+        donors = [
+            Donor(title: "Ms", firstName: "Anne", familyName: "Jones", lastDonation: 0),
+            Donor(title: "Mr", firstName: "Bob", familyName: "Smith", lastDonation: 100),
+            Donor(title: "Dr", firstName: "Alice", familyName: "Doe", lastDonation: 200),
+            Donor(title: "Prof", firstName: "Joe", familyName: "Davis", lastDonation: 320)
+        ]
+    }
+    
+    func generate(maxNumber: Int) -> [String] {
+        var targetDonors: [Donor] = filter?(donors) ?? donors.filter({$0.lastDonation > 0})
+        
+        targetDonors.sort({$0.lastDonation > $1.lastDonation})
+        
+        if targetDonors.count > maxNumber {
+            targetDonors = Array(targetDonors[0..<maxNumber])
+        }
+        
+        return generate?(targetDonors) ?? targetDonors.map({ donor in
+            return "Dear \(donor.title). \(donor.familyName)"
+        })
+    }
+}
+
+let donorDb = DonorDatabase()
+
+let galaInvitations = donorDb.generate(2)
+
+for invite in galaInvitations {
+    print(invite)
+}
+
+donorDb.filter = {$0.filter({$0.lastDonation == 0})}
+donorDb.generate = {$0.map({"Hi \($0.firstName)"})}
+
+let newDonors = donorDb.generate(Int.max)
+
+for invite in newDonors {
+    print(invite)
+}
+
 
 // ---------------------------------Порождающие паттерны------------------------------------
 /*

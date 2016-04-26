@@ -1355,8 +1355,115 @@ let multiply = sequence.compute(multiplyStrategy)
 
 
 /*
-Посетитель (англ. visitor) — поведенческий шаблон проектирования, описывающий операцию, которая выполняется над объектами других классов. При изменении visitor нет необходимости изменять обслуживаемые классы.
+Посетитель (англ. Visitor) — поведенческий шаблон проектирования, описывающий операцию, которая выполняется над объектами других классов. При изменении visitor нет необходимости изменять обслуживаемые классы.
 */
+
+protocol Shape {
+    func accept(visitor: Visitor)
+}
+
+protocol Visitor {
+    func visit(shape: Circle)
+    func visit(shape: Square)
+    func visit(shape: Rectangle)
+}
+
+class Circle: Shape {
+    let radius: Float
+    
+    init(radius: Float) {
+        self.radius = radius
+    }
+    
+    func accept(visitor: Visitor) {
+        visitor.visit(self)
+    }
+}
+
+class Square: Shape {
+    let length: Float
+    
+    init(length: Float) {
+        self.length = length
+    }
+    
+    func accept(visitor: Visitor) {
+        visitor.visit(self)
+    }
+}
+
+class Rectangle: Shape {
+    let xLen: Float
+    let yLen: Float
+    
+    init(x: Float, y: Float) {
+        self.xLen = x
+        self.yLen = y
+    }
+    
+    func accept(visitor: Visitor) {
+        visitor.visit(self)
+    }
+}
+
+class ShapeCollection {
+    let shapes: [Shape]
+    
+    init() {
+        shapes = [
+            Circle(radius: 2.5), Square(length: 4), Rectangle(x: 10, y: 2)
+        ]
+    }
+    
+    func accept(visitor: Visitor) {
+        for shape in shapes {
+            shape.accept(visitor)
+        }
+    }
+}
+
+class AreaVisitor: Visitor {
+    var totalArea: Float = 0.0
+    
+    func visit(shape: Circle) {
+        totalArea += 3.14 * powf(shape.radius, 2)
+    }
+    
+    func visit(shape: Square) {
+        totalArea += powf(shape.length, 2)
+    }
+    
+    func visit(shape: Rectangle) {
+        totalArea += shape.xLen * shape.yLen
+    }
+}
+
+class EdgesVisitor: Visitor {
+    var totalEdges = 0
+    
+    func visit(shape: Circle) {
+        totalEdges += 1
+    }
+    
+    func visit(shape: Square) {
+        totalEdges += 4
+    }
+    
+    func visit(shape: Rectangle) {
+        totalEdges += 4
+    }
+}
+
+let shapes = ShapeCollection()
+let areaVisitor = AreaVisitor()
+
+shapes.accept(areaVisitor)
+print("Area: \(areaVisitor.totalArea)")
+
+let edgeVisitor = EdgesVisitor()
+shapes.accept(edgeVisitor)
+print("Edges: \(edgeVisitor.totalEdges)")
+
 
 /*
 Шаблонный метод (англ. Template method) — поведенческий шаблон проектирования, определяющий основу алгоритма и позволяющий наследникам переопределять некоторые шаги алгоритма, не изменяя его структуру в целом.

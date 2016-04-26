@@ -1311,6 +1311,48 @@ context.changeStateToUnauthorized()
 Стратегия (англ. Strategy) — поведенческий шаблон проектирования, предназначенный для определения семейства алгоритмов, инкапсуляции каждого из них и обеспечения их взаимозаменяемости. Это позволяет выбирать алгоритм путем определения соответствующего класса. Шаблон Strategy позволяет менять выбранный алгоритм независимо от объектов-клиентов, которые его используют.
 */
 
+protocol Strategy {
+    func execute(values: [Int]) -> Int
+}
+
+class SumStrategy: Strategy {
+    func execute(values: [Int]) -> Int {
+        return values.reduce(0, combine: {$0 + $1})
+    }
+}
+
+class MultiplyStrategy: Strategy {
+    func execute(values: [Int]) -> Int {
+        return values.reduce(1, combine: {$0 * $1})
+    }
+}
+
+final class Sequence {
+    private var numbers: [Int]
+    
+    init(numbers: Int...) {
+        self.numbers = numbers
+    }
+    
+    func addNumber(value: Int) {
+        self.numbers.append(value)
+    }
+    
+    func compute(strategy: Strategy) -> Int {
+        return strategy.execute(self.numbers)
+    }
+}
+
+let sequence = Sequence(numbers: 1, 2, 3, 4)
+sequence.addNumber(10)
+sequence.addNumber(20)
+
+let sumStrategy = SumStrategy()
+let multiplyStrategy = MultiplyStrategy()
+
+let sum = sequence.compute(sumStrategy)
+let multiply = sequence.compute(multiplyStrategy)
+
 /*
 Шаблонный метод (англ. Template method) — поведенческий шаблон проектирования, определяющий основу алгоритма и позволяющий наследникам переопределять некоторые шаги алгоритма, не изменяя его структуру в целом.
 */

@@ -1843,13 +1843,117 @@ CurrencyFactory.currencyForCountry(.UK)?.code() ?? noCurrencyCode
 Абстрактная фабрика (англ. Abstract factory) — порождающий шаблон проектирования, предоставляет интерфейс для создания семейств взаимосвязанных или взаимозависимых объектов, не специфицируя их конкретных классов. Шаблон реализуется созданием абстрактного класса Factory, который представляет собой интерфейс для создания компонентов системы (например, для оконного интерфейса он может создавать окна и кнопки). Затем пишутся классы, реализующие этот интерфейс.
 */
 
+// Протоколы
+
+protocol Decimal {
+    func stringValue() -> String
+    // factory
+    static func make(string: String) -> Decimal
+}
+
+typealias NumberFactory = (String) -> Decimal
+
+// Number implementations with factory methods
+
+struct NextStepNumber: Decimal {
+    private var nextStepNumber: NSNumber
+    
+    func stringValue() -> String { return nextStepNumber.stringValue }
+    
+    // factory
+    static func make(string: String) -> Decimal {
+        return NextStepNumber(nextStepNumber: NSNumber(longLong: (string as NSString).longLongValue))
+    }
+}
+
+struct SwiftNumber: Decimal {
+    private var swiftInt: Int
+    
+    func stringValue() -> String { return "\(swiftInt)" }
+    
+    // factory
+    static func make(string: String) -> Decimal {
+        return SwiftNumber(swiftInt: (string as NSString).integerValue)
+    }
+}
+
+// Абстрактная фабрика
+
+enum NumberType {
+    case NextStep, Swift
+}
+
+enum NumberHelper {
+    static func factoryFor(type: NumberType) -> NumberFactory {
+        switch type {
+        case .NextStep:
+            return NextStepNumber.make
+        case .Swift:
+            return SwiftNumber.make
+        }
+    }
+}
+
+// Использование
+
+let factoryOne = NumberHelper.factoryFor(.NextStep)
+let numberOne = factoryOne("1")
+numberOne.stringValue()
+
+let factoryTwo = NumberHelper.factoryFor(.Swift)
+let numberTwo = factoryTwo("2")
+numberTwo.stringValue()
+
+
 /*
 Строитель (англ. Builder) — отделяет конструирование сложного объекта от его представления, так что в результате одного и того же процесса конструирования могут получаться разные представления.
+Хорошо подходит когда в инициализаторе присутствует много параметров. 
 */
 
+class DeathStarBuilder {
+    
+    var x: Double?
+    var y: Double?
+    var z: Double?
+    
+    typealias BuilderClosure = (DeathStarBuilder) -> ()
+    
+    init(buildClosure: BuilderClosure) {
+        buildClosure(self)
+    }
+}
 
+struct DeathStar: CustomStringConvertible {
+    
+    let x: Double
+    let y: Double
+    let z: Double
+    
+    init?(builder: DeathStarBuilder) {
+        
+        if let x = builder.x, y = builder.y, z = builder.z {
+            self.x = x
+            self.y = y
+            self.z = z
+        } else {
+            return nil
+        }
+    }
+    
+    var description: String {
+        return "Death Star at (x:\(x) y:\(y) z:\(z))"
+    }
+}
 
+// Использование
 
+let empire = DeathStarBuilder { builder in
+    builder.x = 0.1
+    builder.y = 0.2
+    builder.z = 0.3
+}
+
+let deathStar = DeathStar(builder: empire)
 
 
 

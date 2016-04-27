@@ -1664,6 +1664,123 @@ globalLogger.printLog()
 Объектный пул (англ. Object pool) — порождающий шаблон проектирования, набор инициализированных и готовых к использованию объектов. Когда системе требуется объект, он не создаётся, а берётся из пула. Когда объект больше не нужен, он не уничтожается, а возвращается в пул.
 */
 
+class Pool<T> {
+    private var data = [T]()
+    private let arrayQueue = dispatch_queue_create("arrayQueue", DISPATCH_QUEUE_SERIAL) // последовательная очередь
+    private let semaphore: dispatch_semaphore_t
+    
+    init(items: [T]) {
+        data.reserveCapacity(data.count)
+        
+        for item in items {
+            data.append(item)
+        }
+        
+        semaphore = dispatch_semaphore_create(items.count) // симофор с начальным количеством ресурсов
+    }
+    
+    func getFromPool() -> T? {
+        var result: T?
+        
+        // ожидаем освобождения, при каждом вызове dispatch_semaphore_wait значение переменной уменьшается на 1. если значение отрицательно, то поток блокируется
+        if dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER) == 0 {
+            dispatch_sync(arrayQueue) {
+                result = self.data.removeAtIndex(0)
+            }
+        }
+        
+        return result
+    }
+    
+    func returnToPool(item: T) {
+        dispatch_async(arrayQueue) {
+            self.data.append(item)
+            dispatch_semaphore_signal(self.semaphore) // освобождение ресурса, приращивает значение переменной на 1
+        }
+    }
+}
+
+class Book {
+    let author: String
+    let title: String
+    let stockNumber: Int
+    var reader: String?
+    var checkoutCount = 0
+    
+    init(author: String, title: String, stockNumber: Int) {
+        self.author = author
+        self.title = title
+        self.stockNumber = stockNumber
+    }
+}
+
+final class Library {
+    private static let sharedInstance = Library(stockLevel: 2)
+    
+    private var books: [Book]
+    private let pool: Pool<Book>
+    
+    private init(stockLevel: Int) {
+        books = [Book]()
+        
+        for count in 1 ... stockLevel {
+            books.append(Book(author: "Dickens, Charles", title: "Hard Times", stockNumber: count))
+        }
+        
+        pool = Pool<Book>(items: books)
+    }
+    
+    class func checkoutBook(reader: String) -> Book? {
+        let book = sharedInstance.pool.getFromPool()
+        book?.reader = reader
+        book?.checkoutCount++
+        return book
+    }
+    
+    class func returnBook(book: Book) {
+        book.reader = nil
+        sharedInstance.pool.returnToPool(book)
+    }
+    
+    class func printReport() {
+        for book in sharedInstance.books {
+            print("...Book#\(book.stockNumber)...")
+            print("Checked out \(book.checkoutCount) times")
+            
+            if book.reader != nil {
+                print("Checked out to \(book.reader!)")
+            } else {
+                print("In stock")
+            }
+        }
+    }
+}
+
+// Использование
+
+var queue = dispatch_queue_create("workQueue", DISPATCH_QUEUE_CONCURRENT)
+var group = dispatch_group_create()
+
+print("Starting...")
+
+for i in 1 ... 20 {
+    dispatch_group_async(group, queue) {
+        var book = Library.checkoutBook("reader#\(i)")
+        
+        if book != nil {
+            NSThread.sleepForTimeInterval(Double(rand() % 2))
+            Library.returnBook(book!)
+        }
+    }
+}
+
+dispatch_group_wait(group, DISPATCH_TIME_FOREVER)
+
+print("All blocks complete")
+
+Library.printReport()
+
+
 /*
 Фабричный метод (англ. Factory Method также известен как Виртуальный конструктор (англ. Virtual Constructor)) — порождающий шаблон проектирования, предоставляющий подклассам интерфейс для создания экземпляров некоторого класса. В момент создания наследники могут определить, какой класс создавать. Иными словами, Фабрика делегирует создание объектов наследникам родительского класса. Это позволяет использовать в коде программы не специфические классы, а манипулировать абстрактными объектами на более высоком уровне.
 */

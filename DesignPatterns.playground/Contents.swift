@@ -1785,6 +1785,60 @@ Library.printReport()
 Фабричный метод (англ. Factory Method также известен как Виртуальный конструктор (англ. Virtual Constructor)) — порождающий шаблон проектирования, предоставляющий подклассам интерфейс для создания экземпляров некоторого класса. В момент создания наследники могут определить, какой класс создавать. Иными словами, Фабрика делегирует создание объектов наследникам родительского класса. Это позволяет использовать в коде программы не специфические классы, а манипулировать абстрактными объектами на более высоком уровне.
 */
 
+protocol Currency {
+    func symbol() -> String
+    func code() -> String
+}
+
+class Euro: Currency {
+    func symbol() -> String {
+        return "€"
+    }
+    
+    func code() -> String {
+        return "EUR"
+    }
+}
+
+class UnitedStatesDolar: Currency {
+    func symbol() -> String {
+        return "$"
+    }
+    
+    func code() -> String {
+        return "USD"
+    }
+}
+
+enum Country {
+    case UnitedStates, Spain, UK, Greece
+}
+
+enum CurrencyFactory {
+    static func currencyForCountry(country: Country) -> Currency? {
+        
+        switch country {
+        case .Spain, .Greece :
+            return Euro()
+        case .UnitedStates :
+            return UnitedStatesDolar()
+        default:
+            return nil
+        }
+        
+    }
+}
+
+// Использование
+
+let noCurrencyCode = "No Currency Code Available"
+
+CurrencyFactory.currencyForCountry(.Greece)?.code() ?? noCurrencyCode
+CurrencyFactory.currencyForCountry(.Spain)?.code() ?? noCurrencyCode
+CurrencyFactory.currencyForCountry(.UnitedStates)?.code() ?? noCurrencyCode
+CurrencyFactory.currencyForCountry(.UK)?.code() ?? noCurrencyCode
+
+
 /*
 Абстрактная фабрика (англ. Abstract factory) — порождающий шаблон проектирования, предоставляет интерфейс для создания семейств взаимосвязанных или взаимозависимых объектов, не специфицируя их конкретных классов. Шаблон реализуется созданием абстрактного класса Factory, который представляет собой интерфейс для создания компонентов системы (например, для оконного интерфейса он может создавать окна и кнопки). Затем пишутся классы, реализующие этот интерфейс.
 */
